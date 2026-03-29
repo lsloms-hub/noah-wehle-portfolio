@@ -8,12 +8,16 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0d0d0d;
-      --text: #ffffff;
-      --label: rgba(255,255,255,0.62);
-      --muted: rgba(255,255,255,0.32);
-      --gap: 10px;
-      --side-pad: 32px;
+      --bg: #f2f0ec;
+      --text: #111111;
+      --label: rgba(0,0,0,0.72);
+      --subtitle: rgba(0,0,0,0.48);
+      --muted: rgba(0,0,0,0.35);
+      --border: rgba(0,0,0,0.12);
+      --accent: #4a6350;
+      --gap-card: 20px;
+      --gap-row: 32px;
+      --side-pad: 40px;
     }
     html, body {
       background: var(--bg);
@@ -21,217 +25,341 @@
       font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
+      cursor: none;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 1000; pointer-events: none;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* ── Crosshair cursor ── */
+    .cursor {
+      position: fixed; width: 20px; height: 20px;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+    .cursor::before, .cursor::after {
+      content: ''; position: absolute; background: var(--accent);
+    }
+    .cursor::before { width: 1px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
+    .cursor::after { width: 100%; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+    .cursor .cursor-center {
+      position: absolute; width: 3px; height: 3px;
+      background: var(--accent); border-radius: 50%;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
     }
 
     /* ── Nav ── */
     nav {
-      display: flex;
-      align-items: flex-end;
+      display: flex; align-items: flex-end;
       justify-content: space-between;
-      padding: 48px var(--side-pad) 32px;
+      padding: 48px var(--side-pad) 36px;
+      position: relative; z-index: 10;
     }
     .nav-name {
-      font-size: clamp(36px, 6vw, 72px);
-      font-weight: 300;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      text-decoration: none;
-      text-transform: lowercase;
-      cursor: pointer;
-      line-height: 1;
+      font-size: 46px; font-weight: 300;
+      letter-spacing: -0.01em; color: var(--text);
+      text-decoration: none; text-transform: uppercase;
+      cursor: none; line-height: 1;
     }
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      list-style: none;
-      padding-bottom: 8px;
-    }
+    .nav-links { display: flex; gap: 28px; list-style: none; padding-bottom: 8px; }
     .nav-links a {
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.16em;
-      color: var(--muted);
-      text-decoration: none;
-      text-transform: lowercase;
-      transition: color 0.2s;
-      cursor: pointer;
+      font-size: 12px; font-weight: 400; letter-spacing: 0.14em;
+      color: var(--muted); text-decoration: none; text-transform: uppercase;
+      transition: color 0.25s; cursor: none;
     }
-    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
     /* ── Pages ── */
     .page { display: none; }
     .page.active { display: block; }
     #page-contact.active { display: flex; }
-
-    /* ── Grid ── */
     #page-work { padding-bottom: 80px; }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--gap);
-      padding: 0 var(--gap) var(--gap);
+
+    /* ── 2-1-2 Grid ── */
+    .mixed-grid {
+      display: flex; flex-direction: column;
+      gap: var(--gap-row);
+      padding: 0 var(--side-pad) var(--gap-row);
     }
-    .card { display: flex; flex-direction: column; cursor: pointer; }
+    .row-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-card); }
+    .row-one { display: flex; justify-content: center; }
+    .row-one .card { width: 62%; }
+
+    /* ── Card ── */
+    .card { display: flex; flex-direction: column; cursor: none; }
     .card-thumb {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      overflow: hidden;
-      background: #141414;
+      position: relative; width: 100%;
+      aspect-ratio: 16/9; overflow: hidden; background: #1a1a1a;
     }
     .card-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover; display: block;
-      transition: opacity 0.3s ease;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: opacity 0.35s ease, transform 0.65s ease;
     }
-    .card:hover .card-thumb img { opacity: 0.78; }
-    .card-label { padding: 9px 0 20px; }
+    .card:hover .card-thumb img { opacity: 0.84; transform: scale(1.02); }
+
+    /* Multi-video indicator */
+    .card-thumb .multi-badge {
+      position: absolute; bottom: 10px; right: 10px;
+      font-size: 9px; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.8); background: rgba(0,0,0,0.45);
+      padding: 4px 7px; text-transform: uppercase;
+      font-family: proxima-nova, sans-serif;
+      backdrop-filter: blur(4px);
+    }
+
+    .card-label { padding: 10px 0 0; margin-bottom: var(--gap-row); }
     .card-client {
-      font-size: 13px; font-weight: 400;
-      letter-spacing: 0.14em; color: var(--label);
-      text-transform: lowercase; line-height: 1;
+      font-size: 13px; font-weight: 400; letter-spacing: 0.08em;
+      color: var(--label); text-transform: uppercase; line-height: 1;
+      transition: color 0.25s; display: block;
     }
+    .card-subtitle {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.08em;
+      color: var(--subtitle); text-transform: uppercase; line-height: 1;
+      display: block; margin-top: 5px;
+    }
+    .card:hover .card-client { color: var(--accent); }
 
     /* ── Contact ── */
-    #page-contact {
-      min-height: 100vh;
-      align-items: center;
-      justify-content: center;
-    }
-    .contact-wrap {
-      width: 100%; max-width: 480px;
-      padding: 60px var(--side-pad) 80px;
-    }
-    .contact-intro {
-      font-size: 13px; letter-spacing: 0.06em;
-      color: var(--muted); text-transform: lowercase;
-      margin-bottom: 48px; line-height: 1.8;
-    }
+    #page-contact { min-height: 100vh; align-items: center; justify-content: center; }
+    .contact-wrap { width: 100%; max-width: 480px; padding: 60px var(--side-pad) 80px; }
+    .contact-intro { font-size: 13px; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 48px; line-height: 1.8; }
     .contact-form { display: flex; flex-direction: column; gap: 28px; }
     .form-field { display: flex; flex-direction: column; gap: 8px; }
-    .form-field label {
-      font-size: 10px; letter-spacing: 0.2em;
-      color: var(--muted); text-transform: lowercase;
-    }
-    .form-field input, .form-field textarea {
-      background: transparent; border: none;
-      border-bottom: 1px solid rgba(255,255,255,0.12);
-      color: var(--text);
-      font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 13px; font-weight: 400;
-      letter-spacing: 0.06em; padding: 10px 0;
-      outline: none; transition: border-color 0.2s;
-      width: 100%; resize: none;
-    }
-    .form-field input:focus, .form-field textarea:focus { border-bottom-color: rgba(255,255,255,0.45); }
-    .form-field input::placeholder, .form-field textarea::placeholder { color: rgba(255,255,255,0.15); }
-    .form-submit {
-      margin-top: 8px; background: transparent;
-      border: 1px solid rgba(255,255,255,0.18);
-      color: var(--muted);
-      font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 10px; letter-spacing: 0.22em;
-      text-transform: lowercase; padding: 14px 32px;
-      cursor: pointer; transition: all 0.2s; align-self: flex-start;
-    }
-    .form-submit:hover { border-color: rgba(255,255,255,0.45); color: var(--text); }
-    .form-success { display: none; font-size: 12px; letter-spacing: 0.1em; color: var(--muted); text-transform: lowercase; margin-top: 8px; }
-    .contact-direct { margin-top: 56px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px; }
-    .contact-direct a { font-size: 12px; letter-spacing: 0.1em; color: var(--muted); text-decoration: none; text-transform: lowercase; transition: color 0.2s; }
-    .contact-direct a:hover { color: var(--text); }
+    .form-field label { font-size: 10px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
+    .form-field input, .form-field textarea { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; letter-spacing: 0.04em; padding: 10px 0; outline: none; transition: border-color 0.2s; width: 100%; resize: none; cursor: none; }
+    .form-field input:focus, .form-field textarea:focus { border-bottom-color: var(--accent); }
+    .form-field input::placeholder, .form-field textarea::placeholder { color: var(--border); }
+    .form-submit { margin-top: 8px; background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px 32px; cursor: none; transition: all 0.25s; align-self: flex-start; }
+    .form-submit:hover { border-color: var(--accent); color: var(--accent); }
+    .form-success { display: none; font-size: 12px; letter-spacing: 0.08em; color: var(--muted); margin-top: 8px; }
+    .contact-direct { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+    .contact-direct a { font-size: 12px; letter-spacing: 0.08em; color: var(--muted); text-decoration: none; transition: color 0.25s; cursor: none; }
+    .contact-direct a:hover { color: var(--accent); }
 
     /* ── Lightbox ── */
-    .lightbox { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.94); align-items: center; justify-content: center; }
-    .lightbox.open { display: flex; }
-    .lightbox-inner { position: relative; width: 90vw; max-width: 1100px; }
-    .lightbox-video { position: relative; width: 100%; aspect-ratio: 16 / 9; }
-    .lightbox-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
-    .lightbox-meta { margin-top: 14px; }
-    .lightbox-title { font-size: 13px; font-weight: 400; letter-spacing: 0.14em; color: var(--label); text-transform: lowercase; }
-    .lightbox-close {
-      position: fixed; top: 24px; right: 32px;
-      width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 50%; cursor: pointer;
-      transition: background 0.2s; padding: 0; z-index: 1000;
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 998;
+      background: rgba(0,0,0,0.97);
+      align-items: center; justify-content: center; flex-direction: column;
     }
-    .lightbox-close:hover { background: rgba(255,255,255,0.18); }
-    .lightbox-close svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.8); stroke-width: 1.5; stroke-linecap: round; }
+    .lightbox.open { display: flex; animation: fadeIn 0.3s ease; }
+    .lightbox-inner { position: relative; width: 86vw; max-width: 1060px; }
+    .lightbox-video { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+    .lightbox-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+
+    /* Playlist nav */
+    .lightbox-playlist {
+      display: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      left: 0;
+      pointer-events: none;
+    }
+    .lightbox-playlist.visible { display: flex; justify-content: space-between; }
+    .playlist-btn {
+      pointer-events: all;
+      background: none; border: none; cursor: none;
+      padding: 16px;
+      opacity: 0.4; transition: opacity 0.2s;
+      position: absolute;
+    }
+    .playlist-btn:hover { opacity: 1; }
+    .playlist-btn.prev { left: -56px; }
+    .playlist-btn.next { right: -56px; }
+    .playlist-btn svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 1px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    .lightbox-meta {
+      margin-top: 0; padding: 12px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .lightbox-meta::before {
+      content: ''; display: block; width: 20px; height: 1px;
+      background: var(--accent); flex-shrink: 0;
+    }
+    .lightbox-title { font-size: 11px; letter-spacing: 0.14em; color: rgba(255,255,255,0.38); text-transform: uppercase; font-weight: 300; flex: 1; }
+    .lightbox-counter { font-size: 11px; letter-spacing: 0.1em; color: rgba(255,255,255,0.25); text-transform: uppercase; font-weight: 300; }
+
+    .lightbox-close {
+      position: fixed; top: 28px; right: 36px;
+      background: none; border: none; cursor: none;
+      padding: 0; z-index: 1000;
+      opacity: 0.4; transition: opacity 0.2s;
+    }
+    .lightbox-close:hover { opacity: 1; }
+    .lightbox-close svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 1px; stroke-linecap: round; }
 
     /* ── Mobile ── */
     @media (max-width: 640px) {
-      :root { --side-pad: 16px; }
-      nav { padding: 32px var(--side-pad) 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
-      .nav-links { gap: 18px; }
-      .grid { grid-template-columns: 1fr; gap: 6px; padding: 0 6px 6px; }
+      :root { --side-pad: 16px; --gap-card: 12px; --gap-row: 20px; }
+      html, body { cursor: auto; }
+      .cursor { display: none; }
+      nav { padding: 28px var(--side-pad) 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .nav-links a, .card, .contact-direct a, .form-submit, .lightbox-close, .playlist-btn, input, textarea { cursor: pointer; }
+      .row-two { grid-template-columns: 1fr; }
+      .row-one .card { width: 100%; }
       .lightbox-inner { width: 95vw; }
-      .lightbox-close { top: 16px; right: 16px; }
+      .lightbox-close { top: 16px; right: 16px; cursor: pointer; }
+      .playlist-btn.prev { left: -4px; }
+      .playlist-btn.next { right: -4px; }
     }
   </style>
 </head>
 <body>
+
+  <div class="cursor" id="cursor"><div class="cursor-center"></div></div>
+
   <nav>
-    <a class="nav-name" onclick="showPage('work')">noah wehle</a>
+    <a class="nav-name" onclick="showPage('work')">Noah Wehle</a>
     <ul class="nav-links">
-      <li><a onclick="showPage('work')" class="active" id="nav-work">work</a></li>
-      <li><a onclick="showPage('contact')" id="nav-contact">contact</a></li>
+      <li><a onclick="showPage('work')" class="active" id="nav-work">Work</a></li>
+      <li><a onclick="showPage('contact')" id="nav-contact">Contact</a></li>
     </ul>
   </nav>
 
   <div class="page active" id="page-work">
-    <div class="grid" id="grid"></div>
+    <div class="mixed-grid" id="grid"></div>
   </div>
 
   <div class="page" id="page-contact">
     <div class="contact-wrap">
-      <p class="contact-intro">editor & producer based in new york.<br>available for commercial, fashion, and documentary work.</p>
+      <p class="contact-intro">Editor & Producer based in New York. Available for commercial, fashion, and documentary work.</p>
       <form class="contact-form" id="contact-form" onsubmit="handleSubmit(event)">
-        <div class="form-field"><label>name</label><input type="text" name="name" placeholder="your name" required></div>
-        <div class="form-field"><label>email</label><input type="email" name="email" placeholder="your email" required></div>
-        <div class="form-field"><label>project</label><input type="text" name="project" placeholder="what are you working on?"></div>
-        <div class="form-field"><label>message</label><textarea name="message" rows="5" placeholder="tell me more"></textarea></div>
-        <button type="submit" class="form-submit">send message</button>
-        <p class="form-success" id="form-success">thanks — i'll be in touch soon.</p>
+        <div class="form-field"><label>Name</label><input type="text" name="name" placeholder="Your name" required></div>
+        <div class="form-field"><label>Email</label><input type="email" name="email" placeholder="Your email" required></div>
+        <div class="form-field"><label>Project</label><input type="text" name="project" placeholder="What are you working on?"></div>
+        <div class="form-field"><label>Message</label><textarea name="message" rows="5" placeholder="Tell me more"></textarea></div>
+        <button type="submit" class="form-submit">Send Message</button>
+        <p class="form-success" id="form-success">Thanks — I'll be in touch soon.</p>
       </form>
       <div class="contact-direct">
-        <a href="mailto:noah@noahwehle.com">noah@noahwehle.com</a>
-        <a href="https://www.instagram.com/noahwehle" target="_blank">instagram</a>
-        <a href="https://vimeo.com/noahwehle" target="_blank">vimeo</a>
+        <a href="/cdn-cgi/l/email-protection#026c6d636a426c6d636a75676a6e672c616d6f"><span class="__cf_email__" data-cfemail="1b75747a735b75747a736c7e73777e35787476">[email&#160;protected]</span></a>
+        <a href="https://www.instagram.com/noahwehle" target="_blank">Instagram</a>
+        <a href="https://vimeo.com/noahwehle" target="_blank">Vimeo</a>
       </div>
     </div>
   </div>
 
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close" id="lightbox-close">
-      <svg viewBox="0 0 14 14" fill="none"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+      <svg viewBox="0 0 18 18" fill="none"><line x1="1" y1="1" x2="17" y2="17"/><line x1="17" y1="1" x2="1" y2="17"/></svg>
     </button>
     <div class="lightbox-inner">
       <div class="lightbox-video">
         <iframe id="lightbox-iframe" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        <div class="lightbox-playlist" id="lightbox-playlist">
+          <button class="playlist-btn prev" id="playlist-prev">
+            <svg viewBox="0 0 20 20"><polyline points="13,4 7,10 13,16"/></svg>
+          </button>
+          <button class="playlist-btn next" id="playlist-next">
+            <svg viewBox="0 0 20 20"><polyline points="7,4 13,10 7,16"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="lightbox-meta"><span class="lightbox-title" id="lightbox-title"></span></div>
+      <div class="lightbox-meta">
+        <span class="lightbox-title" id="lightbox-title"></span>
+        <span class="lightbox-counter" id="lightbox-counter"></span>
+      </div>
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ── Project Data ──
+    // Each project: client, subtitle, thumb, and either vimeoId (single) or videos[] (playlist)
     const projects = [
-      { client: "brandon maxwell", subtitle: "fw2026", vimeoId: "1168175788", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299416220-P3HETPGLGABCR1ZFGOK6/image-asset.jpeg?format=1000w" },
-      { client: "saks fifth avenue", subtitle: "resort fall 2025", vimeoId: "1154103715", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299479241-HMEOYPLX49M8KDCFA78X/image-asset.jpeg?format=1000w" },
-      { client: "nike", subtitle: "n7 summer 2025", vimeoId: "1157453883", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299551300-7IPSCXA68IDY7Q8D50B6/image-asset.jpeg?format=1000w" },
-      { client: "gh bass", subtitle: "collection 2025", vimeoId: "881878472", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299582571-4QP2CIB89DRLH2DOCFK9/image-asset.jpeg?format=1000w" }
+      { client: "Brandon Maxwell", subtitle: "FW2026", vimeoId: "1168175788", thumb: "BRANDON MAXWELL.jpeg" },
+      { client: "Saks Fifth Avenue", subtitle: "Resort Fall 2025", vimeoId: "1154103715", thumb: "SAKS.jpeg" },
+      { client: "Nike", subtitle: "N7 Summer 2025", vimeoId: "1157453883", thumb: "NIKE.png" },
+      { client: "GH Bass", subtitle: "Collection 2025", vimeoId: "881878472", thumb: "GHBASS.jpeg" },
+      { client: "Oura", subtitle: "Give Us The Finger", vimeoId: "1157322073", thumb: "OURA.jpeg" },
+      { client: "Chase Sapphire", subtitle: "Travel 2025", vimeoId: "1157321424", thumb: "CHASE.jpeg" },
+      { client: "Neiman Marcus", subtitle: "Holiday Campaign 2025", vimeoId: "1157321819", thumb: "NEIMAN MARCUS.jpeg" },
+      { client: "Gucci", subtitle: "Campaign", vimeoId: "1157327834", thumb: "GUCCI.jpeg" },
+      { client: "Skims", subtitle: "x Swarovski", vimeoId: "1157433160", thumb: "SKIMS 2.jpeg" },
+      { client: "Ralph Lauren", subtitle: "NYFW25 BTS", vimeoId: "1157323219", thumb: "RALPH LAUREN.webp" },
+      { client: "Lonely Planet", subtitle: "50th Anniversary", vimeoId: "881877855", thumb: "LONELY PLANET.jpeg" },
+      { client: "Marriott", subtitle: "Bonvoy / Tribute Portfolio", vimeoId: "500571041", thumb: "MARRIOTT.png" },
+      { client: "Refinery 29", subtitle: "The World Your Way", vimeoId: "500667501", thumb: "REFINERY 29.webp" },
+      {
+        client: "Camp",
+        subtitle: "Walmart",
+        thumb: "CAMP.jpeg",
+        videos: [
+          { vimeoId: "555917861", subtitle: "Camp x Walmart" },
+          { vimeoId: "788310801", subtitle: "Present Shop" }
+        ]
+      },
+      {
+        client: "Baha Mar",
+        subtitle: "Mod Op",
+        thumb: "BAHAMAR.webp",
+        videos: [
+          { vimeoId: "289158214", subtitle: "Baha Mar — 1" },
+          { vimeoId: "289158222", subtitle: "Baha Mar — 2" },
+          { vimeoId: "289159518", subtitle: "Baha Mar — 3" }
+        ]
+      },
+      { client: "Canada Tourism", subtitle: "Destination Indigenous", vimeoId: "555914240", thumb: "ITAC.jpeg" },
+      { client: "Love Army", subtitle: "For Somalia", vimeoId: "225362905", thumb: "LOVE ARMY.webp" },
+      { client: "GH Bass", subtitle: "Iceland", vimeoId: "881874261", thumb: "GHBASS.jpeg" },
+      { client: "A Woman's Guide to the World", subtitle: "New Zealand", vimeoId: "216219248", thumb: "A WOMENS GUIDE TO THE WORLD.webp" },
+      { client: "Wilder", subtitle: "2019 Showreel", vimeoId: "264144652", thumb: "WILDER.webp" },
+      { client: "Yalla", subtitle: "Documentary Trailer", vimeoId: "326901193", thumb: "YALLA.webp" }
     ];
 
-    const grid = document.getElementById('grid');
-    projects.forEach(p => {
+    // ── Build grid ──
+    function makeCard(p) {
       const card = document.createElement('div');
       card.className = 'card';
-      card.innerHTML = `<div class="card-thumb"><img src="${p.thumb}" alt="${p.client}" loading="lazy"></div><div class="card-label"><span class="card-client">${p.client}</span></div>`;
+      const isPlaylist = p.videos && p.videos.length > 1;
+      card.innerHTML = `
+        <div class="card-thumb">
+          <img src="${p.thumb}" alt="${p.client}" loading="lazy">
+          ${isPlaylist ? `<div class="multi-badge">${p.videos.length} Videos</div>` : ''}
+        </div>
+        <div class="card-label">
+          <span class="card-client">${p.client}</span>
+          <span class="card-subtitle">${p.subtitle}</span>
+        </div>`;
       card.addEventListener('click', () => openLightbox(p));
-      grid.appendChild(card);
+      return card;
+    }
+
+    const grid = document.getElementById('grid');
+    let i = 0, rowType = 'two';
+    while (i < projects.length) {
+      if (rowType === 'two') {
+        const row = document.createElement('div'); row.className = 'row-two';
+        if (projects[i]) { row.appendChild(makeCard(projects[i])); i++; }
+        if (projects[i]) { row.appendChild(makeCard(projects[i])); i++; }
+        grid.appendChild(row); rowType = 'one';
+      } else {
+        if (projects[i]) {
+          const row = document.createElement('div'); row.className = 'row-one';
+          row.appendChild(makeCard(projects[i])); i++;
+          grid.appendChild(row);
+        }
+        rowType = 'two';
+      }
+    }
+
+    // ── Cursor ──
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
     });
 
+    // ── Page nav ──
     function showPage(name) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
@@ -239,21 +367,55 @@
       document.getElementById('nav-' + name).classList.add('active');
     }
 
+    // ── Contact form ──
     function handleSubmit(e) {
       e.preventDefault();
       const form = document.getElementById('contact-form');
-      fetch('https://formspree.io/f/YOUR_FORM_ID', { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } })
-        .then(() => { form.reset(); document.getElementById('form-success').style.display = 'block'; })
-        .catch(() => { form.reset(); document.getElementById('form-success').style.display = 'block'; });
+      fetch('https://formspree.io/f/YOUR_FORM_ID', {
+        method: 'POST', body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      }).then(() => {
+        form.reset();
+        document.getElementById('form-success').style.display = 'block';
+      }).catch(() => {
+        form.reset();
+        document.getElementById('form-success').style.display = 'block';
+      });
     }
 
+    // ── Lightbox + Playlist ──
     const lightbox = document.getElementById('lightbox');
     const iframe = document.getElementById('lightbox-iframe');
     const titleEl = document.getElementById('lightbox-title');
+    const counterEl = document.getElementById('lightbox-counter');
+    const playlistEl = document.getElementById('lightbox-playlist');
+    const prevBtn = document.getElementById('playlist-prev');
+    const nextBtn = document.getElementById('playlist-next');
+
+    let currentProject = null;
+    let currentIndex = 0;
+
+    function loadVideo(index) {
+      const isPlaylist = currentProject.videos && currentProject.videos.length > 1;
+      const vimeoId = isPlaylist ? currentProject.videos[index].vimeoId : currentProject.vimeoId;
+      const subtitle = isPlaylist ? currentProject.videos[index].subtitle : currentProject.subtitle;
+      iframe.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&title=0&byline=0&portrait=0&sidedock=0&transparent=0&color=4a6350`;
+      titleEl.textContent = currentProject.client + ' // ' + subtitle;
+      if (isPlaylist) {
+        counterEl.textContent = `${index + 1} / ${currentProject.videos.length}`;
+        playlistEl.classList.add('visible');
+        prevBtn.style.opacity = index === 0 ? '0.15' : '';
+        nextBtn.style.opacity = index === currentProject.videos.length - 1 ? '0.15' : '';
+      } else {
+        counterEl.textContent = '';
+        playlistEl.classList.remove('visible');
+      }
+    }
 
     function openLightbox(p) {
-      iframe.src = `https://player.vimeo.com/video/${p.vimeoId}?autoplay=1&title=0&byline=0&portrait=0&color=ffffff`;
-      titleEl.textContent = p.client + (p.subtitle ? ' — ' + p.subtitle : '');
+      currentProject = p;
+      currentIndex = 0;
+      loadVideo(0);
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
@@ -262,11 +424,27 @@
       lightbox.classList.remove('open');
       iframe.src = '';
       document.body.style.overflow = '';
+      currentProject = null;
     }
+
+    prevBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (currentProject.videos && currentIndex > 0) {
+        currentIndex--;
+        loadVideo(currentIndex);
+      }
+    });
+
+    nextBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (currentProject.videos && currentIndex < currentProject.videos.length - 1) {
+        currentIndex++;
+        loadVideo(currentIndex);
+      }
+    });
 
     document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-  </script>
-</body>
-</html>
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight' && currentProject?.videos) { if (currentIndex < curren
