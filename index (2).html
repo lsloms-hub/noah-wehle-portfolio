@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noah Wehle</title>
+  <link rel="stylesheet" href="https://use.typekit.net/ekf4sof.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0d0d;
+      --text: #ffffff;
+      --label: rgba(255,255,255,0.62);
+      --muted: rgba(255,255,255,0.32);
+      --gap: 10px;
+      --side-pad: 32px;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 48px var(--side-pad) 32px;
+    }
+    .nav-name {
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-decoration: none;
+      text-transform: lowercase;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      padding-bottom: 8px;
+    }
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: lowercase;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+    /* ── Pages ── */
+    .page { display: none; }
+    .page.active { display: block; }
+    #page-contact.active { display: flex; }
+
+    /* ── Grid ── */
+    #page-work { padding-bottom: 80px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      padding: 0 var(--gap) var(--gap);
+    }
+    .card { display: flex; flex-direction: column; cursor: pointer; }
+    .card-thumb {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #141414;
+    }
+    .card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: opacity 0.3s ease;
+    }
+    .card:hover .card-thumb img { opacity: 0.78; }
+    .card-label { padding: 9px 0 20px; }
+    .card-client {
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.14em; color: var(--label);
+      text-transform: lowercase; line-height: 1;
+    }
+
+    /* ── Contact ── */
+    #page-contact {
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    .contact-wrap {
+      width: 100%; max-width: 480px;
+      padding: 60px var(--side-pad) 80px;
+    }
+    .contact-intro {
+      font-size: 13px; letter-spacing: 0.06em;
+      color: var(--muted); text-transform: lowercase;
+      margin-bottom: 48px; line-height: 1.8;
+    }
+    .contact-form { display: flex; flex-direction: column; gap: 28px; }
+    .form-field { display: flex; flex-direction: column; gap: 8px; }
+    .form-field label {
+      font-size: 10px; letter-spacing: 0.2em;
+      color: var(--muted); text-transform: lowercase;
+    }
+    .form-field input, .form-field textarea {
+      background: transparent; border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px; font-weight: 400;
+      letter-spacing: 0.06em; padding: 10px 0;
+      outline: none; transition: border-color 0.2s;
+      width: 100%; resize: none;
+    }
+    .form-field input:focus, .form-field textarea:focus { border-bottom-color: rgba(255,255,255,0.45); }
+    .form-field input::placeholder, .form-field textarea::placeholder { color: rgba(255,255,255,0.15); }
+    .form-submit {
+      margin-top: 8px; background: transparent;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: var(--muted);
+      font-family: proxima-nova, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 10px; letter-spacing: 0.22em;
+      text-transform: lowercase; padding: 14px 32px;
+      cursor: pointer; transition: all 0.2s; align-self: flex-start;
+    }
+    .form-submit:hover { border-color: rgba(255,255,255,0.45); color: var(--text); }
+    .form-success { display: none; font-size: 12px; letter-spacing: 0.1em; color: var(--muted); text-transform: lowercase; margin-top: 8px; }
+    .contact-direct { margin-top: 56px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px; }
+    .contact-direct a { font-size: 12px; letter-spacing: 0.1em; color: var(--muted); text-decoration: none; text-transform: lowercase; transition: color 0.2s; }
+    .contact-direct a:hover { color: var(--text); }
+
+    /* ── Lightbox ── */
+    .lightbox { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.94); align-items: center; justify-content: center; }
+    .lightbox.open { display: flex; }
+    .lightbox-inner { position: relative; width: 90vw; max-width: 1100px; }
+    .lightbox-video { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+    .lightbox-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    .lightbox-meta { margin-top: 14px; }
+    .lightbox-title { font-size: 13px; font-weight: 400; letter-spacing: 0.14em; color: var(--label); text-transform: lowercase; }
+    .lightbox-close {
+      position: fixed; top: 24px; right: 32px;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%; cursor: pointer;
+      transition: background 0.2s; padding: 0; z-index: 1000;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.18); }
+    .lightbox-close svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.8); stroke-width: 1.5; stroke-linecap: round; }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      :root { --side-pad: 16px; }
+      nav { padding: 32px var(--side-pad) 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .nav-links { gap: 18px; }
+      .grid { grid-template-columns: 1fr; gap: 6px; padding: 0 6px 6px; }
+      .lightbox-inner { width: 95vw; }
+      .lightbox-close { top: 16px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-name" onclick="showPage('work')">noah wehle</a>
+    <ul class="nav-links">
+      <li><a onclick="showPage('work')" class="active" id="nav-work">work</a></li>
+      <li><a onclick="showPage('contact')" id="nav-contact">contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page active" id="page-work">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="page" id="page-contact">
+    <div class="contact-wrap">
+      <p class="contact-intro">editor & producer based in new york.<br>available for commercial, fashion, and documentary work.</p>
+      <form class="contact-form" id="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-field"><label>name</label><input type="text" name="name" placeholder="your name" required></div>
+        <div class="form-field"><label>email</label><input type="email" name="email" placeholder="your email" required></div>
+        <div class="form-field"><label>project</label><input type="text" name="project" placeholder="what are you working on?"></div>
+        <div class="form-field"><label>message</label><textarea name="message" rows="5" placeholder="tell me more"></textarea></div>
+        <button type="submit" class="form-submit">send message</button>
+        <p class="form-success" id="form-success">thanks — i'll be in touch soon.</p>
+      </form>
+      <div class="contact-direct">
+        <a href="mailto:noah@noahwehle.com">noah@noahwehle.com</a>
+        <a href="https://www.instagram.com/noahwehle" target="_blank">instagram</a>
+        <a href="https://vimeo.com/noahwehle" target="_blank">vimeo</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close">
+      <svg viewBox="0 0 14 14" fill="none"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+    </button>
+    <div class="lightbox-inner">
+      <div class="lightbox-video">
+        <iframe id="lightbox-iframe" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+      </div>
+      <div class="lightbox-meta"><span class="lightbox-title" id="lightbox-title"></span></div>
+    </div>
+  </div>
+
+  <script>
+    const projects = [
+      { client: "brandon maxwell", subtitle: "fw2026", vimeoId: "1168175788", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299416220-P3HETPGLGABCR1ZFGOK6/image-asset.jpeg?format=1000w" },
+      { client: "saks fifth avenue", subtitle: "resort fall 2025", vimeoId: "1154103715", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299479241-HMEOYPLX49M8KDCFA78X/image-asset.jpeg?format=1000w" },
+      { client: "nike", subtitle: "n7 summer 2025", vimeoId: "1157453883", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299551300-7IPSCXA68IDY7Q8D50B6/image-asset.jpeg?format=1000w" },
+      { client: "gh bass", subtitle: "collection 2025", vimeoId: "881878472", thumb: "https://images.squarespace-cdn.com/content/v1/5728e65f01dbae6ba4007fff/1774299582571-4QP2CIB89DRLH2DOCFK9/image-asset.jpeg?format=1000w" }
+    ];
+
+    const grid = document.getElementById('grid');
+    projects.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="card-thumb"><img src="${p.thumb}" alt="${p.client}" loading="lazy"></div><div class="card-label"><span class="card-client">${p.client}</span></div>`;
+      card.addEventListener('click', () => openLightbox(p));
+      grid.appendChild(card);
+    });
+
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      document.getElementById('nav-' + name).classList.add('active');
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form = document.getElementById('contact-form');
+      fetch('https://formspree.io/f/YOUR_FORM_ID', { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } })
+        .then(() => { form.reset(); document.getElementById('form-success').style.display = 'block'; })
+        .catch(() => { form.reset(); document.getElementById('form-success').style.display = 'block'; });
+    }
+
+    const lightbox = document.getElementById('lightbox');
+    const iframe = document.getElementById('lightbox-iframe');
+    const titleEl = document.getElementById('lightbox-title');
+
+    function openLightbox(p) {
+      iframe.src = `https://player.vimeo.com/video/${p.vimeoId}?autoplay=1&title=0&byline=0&portrait=0&color=ffffff`;
+      titleEl.textContent = p.client + (p.subtitle ? ' — ' + p.subtitle : '');
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      iframe.src = '';
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+  </script>
+</body>
+</html>
