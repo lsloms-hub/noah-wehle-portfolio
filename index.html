@@ -107,15 +107,13 @@
     #page-contact.active { display: flex; }
     #page-work { padding-bottom: 80px; }
 
-    /* ── 2-1-2 Grid ── */
+    /* ── 3-Column Grid ── */
     .mixed-grid {
-      display: flex; flex-direction: column;
-      gap: var(--gap-row);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--gap-card);
       padding: 0 var(--side-pad) var(--gap-row);
     }
-    .row-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-card); }
-    .row-one { display: flex; justify-content: center; }
-    .row-one .card { width: 62%; }
 
     /* ── Card ── */
     .card { display: flex; flex-direction: column; cursor: none; }
@@ -127,7 +125,19 @@
       width: 100%; height: 100%; object-fit: cover; display: block;
       transition: opacity 0.35s ease, transform 0.65s ease;
     }
-    .card:hover .card-thumb img { opacity: 0.84; transform: scale(1.02); }
+    .card:hover .card-thumb img { opacity: 0; transform: scale(1.02); }
+
+    /* Hover video preview */
+    .card-thumb .hover-video {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .card-thumb .hover-video iframe {
+      width: 100%; height: 100%; border: none;
+      position: absolute; inset: 0;
+    }
+    .card:hover .card-thumb .hover-video { opacity: 1; }
 
     /* Multi-video indicator */
     .card-thumb .multi-badge {
@@ -239,8 +249,7 @@
       footer { padding: 12px var(--side-pad); }
       .footer-instagram { cursor: pointer; }
       .nav-links a, .card, .contact-row-value, .form-submit, .lightbox-close, .playlist-btn, input, textarea { cursor: pointer; }
-      .row-two { grid-template-columns: 1fr; }
-      .row-one .card { width: 100%; }
+      .mixed-grid { grid-template-columns: 1fr; gap: 6px; }
       .lightbox-inner { width: 95vw; }
       .lightbox-close { top: 16px; right: 16px; cursor: pointer; }
       .playlist-btn.prev { left: -4px; }
@@ -273,7 +282,7 @@
       <div class="contact-items">
         <div class="contact-item">
           <span class="contact-item-label">Email</span>
-          <a class="contact-item-value" href="mailto:noahwehle@gmail.com">noahwehle@gmail.com</a>
+          <a class="contact-item-value" href="/cdn-cgi/l/email-protection#b5dbdad4ddc2d0ddd9d0f5d2d8d4dcd99bd6dad8"><span class="__cf_email__" data-cfemail="620c0d030a15070a0e0722050f030b0e4c010d0f">[email&#160;protected]</span></a>
         </div>
         <div class="contact-item">
           <span class="contact-item-label">Phone</span>
@@ -310,7 +319,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // ── Project Data ──
     // Each project: client, subtitle, thumb, and either vimeoId (single) or videos[] (playlist)
     const projects = [
@@ -355,40 +364,47 @@
     ];
 
     // ── Build grid ──
+    function getVimeoId(p) {
+      return p.vimeoId || (p.videos && p.videos[0].vimeoId);
+    }
+
     function makeCard(p) {
       const card = document.createElement('div');
       card.className = 'card';
       const isPlaylist = p.videos && p.videos.length > 1;
+      const vimeoId = getVimeoId(p);
+      const previewSrc = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&title=0&byline=0&portrait=0&sidedock=0&controls=0&transparent=0&background=1`;
+
       card.innerHTML = `
         <div class="card-thumb">
           <img src="${p.thumb}" alt="${p.client}" loading="lazy">
+          <div class="hover-video" id="hv-${vimeoId}"></div>
           ${isPlaylist ? `<div class="multi-badge">${p.videos.length} Videos</div>` : ''}
         </div>
         <div class="card-label">
           <span class="card-client">${p.client}</span>
           <span class="card-subtitle">${p.subtitle}</span>
         </div>`;
+
+      const hoverEl = card.querySelector('.hover-video');
+      let loaded = false;
+
+      card.addEventListener('mouseenter', () => {
+        if (!loaded) {
+          const iframe = document.createElement('iframe');
+          iframe.src = previewSrc;
+          iframe.allow = 'autoplay';
+          hoverEl.appendChild(iframe);
+          loaded = true;
+        }
+      });
+
       card.addEventListener('click', () => openLightbox(p));
       return card;
     }
 
     const grid = document.getElementById('grid');
-    let i = 0, rowType = 'two';
-    while (i < projects.length) {
-      if (rowType === 'two') {
-        const row = document.createElement('div'); row.className = 'row-two';
-        if (projects[i]) { row.appendChild(makeCard(projects[i])); i++; }
-        if (projects[i]) { row.appendChild(makeCard(projects[i])); i++; }
-        grid.appendChild(row); rowType = 'one';
-      } else {
-        if (projects[i]) {
-          const row = document.createElement('div'); row.className = 'row-one';
-          row.appendChild(makeCard(projects[i])); i++;
-          grid.appendChild(row);
-        }
-        rowType = 'two';
-      }
-    }
+    projects.forEach(p => grid.appendChild(makeCard(p)));
 
     // ── Cursor ──
     const cursor = document.getElementById('cursor');
@@ -470,13 +486,4 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowRight' && currentProject?.videos) { if (currentIndex < currentProject.videos.length - 1) { currentIndex++; loadVideo(currentIndex); } }
-      if (e.key === 'ArrowLeft' && currentProject?.videos) { if (currentIndex > 0) { currentIndex--; loadVideo(currentIndex); } }
-    });
-  </script>
-  <footer>
-    <span class="footer-copy">© 2025 Noah Wehle</span>
-    <a class="footer-instagram" href="https://www.instagram.com/noahwehle/" target="_blank">Instagram</a>
-  </footer>
-
-</body>
-</html>
+      if (e.key === 'ArrowLeft' && currentProject?.videos) { if (currentIndex > 0) { currentIndex--; loadVid
