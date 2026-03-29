@@ -486,4 +486,8 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowRight' && currentProject?.videos) { if (currentIndex < currentProject.videos.length - 1) { currentIndex++; loadVideo(currentIndex); } }
-      if (e.key === 'ArrowLeft' && currentProject?.videos) { if (currentIndex > 0) { currentIndex--; loadVid
+      if (e.key === 'ArrowLeft' && currentProject?.videos) { if (currentIndex > 0) { currentIndex--; loadVideo(currentIndex); } }
+    });
+  </script>
+</body>
+</html>
