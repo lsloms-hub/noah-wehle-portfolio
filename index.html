@@ -387,13 +387,14 @@
         </div>`;
 
       const hoverEl = card.querySelector('.hover-video');
+      let loaded = false;
       card.addEventListener('mouseenter', () => {
-        if (!hoverEl.dataset.loaded) {
+        if (!loaded) {
           const iframe = document.createElement('iframe');
           iframe.src = previewSrc;
           iframe.allow = 'autoplay';
           hoverEl.appendChild(iframe);
-          hoverEl.dataset.loaded = '1';
+          loaded = true;
         }
       });
 
@@ -454,9 +455,10 @@
       loadVideo(0);
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
-      const vimeoId = p.vimeoId || (p.videos && p.videos[0].vimeoId);
-      const hoverEl = document.getElementById('hv-' + vimeoId);
-      if (hoverEl) { hoverEl.innerHTML = ''; delete hoverEl.dataset.loaded; }
+      document.querySelectorAll('.hover-video iframe').forEach(f => {
+        f.dataset.src = f.src;
+        f.src = 'about:blank';
+      });
     }
 
     function closeLightbox() {
@@ -464,6 +466,9 @@
       iframe.src = 'about:blank';
       document.body.style.overflow = '';
       currentProject = null;
+      document.querySelectorAll('.hover-video iframe').forEach(f => {
+        if (f.dataset.src) f.src = f.dataset.src;
+      });
     }
 
     prevBtn.addEventListener('click', e => {
