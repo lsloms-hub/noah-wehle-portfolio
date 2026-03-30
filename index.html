@@ -387,15 +387,13 @@
         </div>`;
 
       const hoverEl = card.querySelector('.hover-video');
-      let loaded = false;
-
       card.addEventListener('mouseenter', () => {
-        if (!loaded) {
+        if (!hoverEl.dataset.loaded) {
           const iframe = document.createElement('iframe');
           iframe.src = previewSrc;
           iframe.allow = 'autoplay';
           hoverEl.appendChild(iframe);
-          loaded = true;
+          hoverEl.dataset.loaded = '1';
         }
       });
 
@@ -456,6 +454,9 @@
       loadVideo(0);
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
+      const vimeoId = p.vimeoId || (p.videos && p.videos[0].vimeoId);
+      const hoverEl = document.getElementById('hv-' + vimeoId);
+      if (hoverEl) { hoverEl.innerHTML = ''; delete hoverEl.dataset.loaded; }
     }
 
     function closeLightbox() {
