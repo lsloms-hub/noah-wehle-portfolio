@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Noah Wehle</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='1' y='86' font-family='Helvetica Neue,Helvetica,Arial,sans-serif' font-size='72' font-weight='200' fill='%234a6350'>NW</text></svg>">
+  <link rel="preconnect" href="https://player.vimeo.com">
+  <link rel="preconnect" href="https://i.vimeocdn.com">
+  <link rel="preconnect" href="https://f.vimeocdn.com">
   <link rel="stylesheet" href="https://use.typekit.net/ekf4sof.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,7 +20,7 @@
       --border: rgba(0,0,0,0.12);
       --accent: #4a6350;
       --gap-card: 20px;
-      --gap-row: 32px;
+      --gap-row: 8px;
       --side-pad: 40px;
     }
     html, body {
@@ -122,7 +125,7 @@
       aspect-ratio: 16/9; overflow: hidden; background: #1a1a1a;
     }
     .card-thumb img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;
       transition: opacity 0.35s ease, transform 0.65s ease;
     }
     .card:hover .card-thumb img { opacity: 0; transform: scale(1.02); }
@@ -282,11 +285,7 @@
       <div class="contact-items">
         <div class="contact-item">
           <span class="contact-item-label">Email</span>
-          <a class="contact-item-value" href="/cdn-cgi/l/email-protection#b5dbdad4ddc2d0ddd9d0f5d2d8d4dcd99bd6dad8"><span class="__cf_email__" data-cfemail="620c0d030a15070a0e0722050f030b0e4c010d0f">[email&#160;protected]</span></a>
-        </div>
-        <div class="contact-item">
-          <span class="contact-item-label">Phone</span>
-          <a class="contact-item-value" href="tel:+12017230560">201-723-0560</a>
+          <a class="contact-item-value" href="mailto:noahwehle@gmail.com">noahwehle@gmail.com</a>
         </div>
         <div class="contact-item">
           <span class="contact-item-label">Instagram</span>
@@ -319,22 +318,22 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     // ── Project Data ──
     // Each project: client, subtitle, thumb, and either vimeoId (single) or videos[] (playlist)
     const projects = [
       { client: "Brandon Maxwell", subtitle: "FW2026", vimeoId: "1168175788", thumb: "BRANDON MAXWELL.jpeg" },
       { client: "Saks Fifth Avenue", subtitle: "Resort Fall 2025", vimeoId: "1154103715", thumb: "SAKS.jpeg" },
-      { client: "Nike", subtitle: "N7 Summer 2025", vimeoId: "1157453883", thumb: "NIKE.png" },
+      { client: "Nike", subtitle: "N7 Summer 2025", vimeoId: "1157453883", thumb: "NIKE.jpeg" },
       { client: "GH Bass", subtitle: "Collection 2025", vimeoId: "881878472", thumb: "GHBASS.jpeg" },
-      { client: "Oura", subtitle: "Give Us The Finger", vimeoId: "1157322073", thumb: "OURA.jpeg" },
+      { client: "Oura", subtitle: "Give Us The Finger", vimeoId: "1157322073", thumb: "OURA.jpeg", pos: "center 20%" },
       { client: "Chase Sapphire", subtitle: "Travel 2025", vimeoId: "1157321424", thumb: "CHASE.jpeg" },
       { client: "Neiman Marcus", subtitle: "Holiday Campaign 2025", vimeoId: "1157321819", thumb: "NEIMAN MARCUS.jpeg" },
-      { client: "Gucci", subtitle: "Campaign", vimeoId: "1157327834", thumb: "GUCCI.jpeg" },
+      { client: "Gucci", subtitle: "Campaign", vimeoId: "1157327834", thumb: "GUCCI.jpeg", pos: "center 14%" },
       { client: "Skims", subtitle: "x Swarovski", vimeoId: "1157433160", thumb: "SKIMS 2.jpeg" },
       { client: "Ralph Lauren", subtitle: "NYFW25 BTS", vimeoId: "1157323219", thumb: "RALPH LAUREN.webp" },
       { client: "Lonely Planet", subtitle: "50th Anniversary", vimeoId: "881877855", thumb: "LONELY PLANET.jpeg" },
-      { client: "Marriott", subtitle: "Bonvoy / Tribute Portfolio", vimeoId: "500571041", thumb: "MARRIOTT.png" },
+      { client: "Marriott", subtitle: "Bonvoy / Tribute Portfolio", vimeoId: "500571041", thumb: "MARRIOTT.jpeg" },
       { client: "Refinery 29", subtitle: "The World Your Way", vimeoId: "500667501", thumb: "REFINERY 29.webp" },
       {
         client: "Camp",
@@ -377,7 +376,7 @@
 
       card.innerHTML = `
         <div class="card-thumb">
-          <img src="${p.thumb}" alt="${p.client}" loading="lazy">
+          <img src="${p.thumb}" alt="${p.client}" loading="lazy" style="${p.pos ? `object-position:${p.pos};` : ''}${p.fit ? `object-fit:${p.fit};` : ''}">
           <div class="hover-video" id="hv-${vimeoId}"></div>
           ${isPlaylist ? `<div class="multi-badge">${p.videos.length} Videos</div>` : ''}
         </div>
